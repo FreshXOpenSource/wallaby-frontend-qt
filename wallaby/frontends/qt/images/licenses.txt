@@ -1,17 +1,16 @@
-Icons from http://taytel.deviantart.com/
+Handdrawn icon-set 
+    free for commercial and non-commercial use
+    by Pawel Kadysz - http://www.177designs.com
 
-arrow_up.png
-arrow_down.png
-add.png
-delete.png
-cancel.png
-
-LGPL:
 find.png
 save.png
 edit.png
+    LGPL
 
-http://www.iconfinder.com/icondetails/66819/128/_icon
+contract.png
+    free for commercial and non-commercial use
+    by LazyCrazy - http://lazycrazy.deviantart.com/
 
-
-
+wallaby Logos
+    Only free in a wallaby application (as reference to the wallaby framework)
+    by FreshX GbR - http://www.freshx.de
