@@ -6,7 +6,7 @@ import platform, sys
 
 setup(name='wallaby-frontend-qt',
       version='0.2.33',
-      url='http://freshx.de/wallaby/frontends/qt',
+      url='https://github.com/FreshXOpenSource/wallaby-frontend-qt',
       author='FreshX GbR',
       author_email='wallaby@freshx.de',
       license='BSD',
