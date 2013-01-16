@@ -51,6 +51,7 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
             self._types = []
             self._typeArgs = []
             for cfg in cols:
+                if cfg is None: continue
                 self._columns.append(cfg.get('path', None))
                 self._labels.append(cfg.get('label', None))
                 self._types.append(FX.convertType(cfg.get('type', None)))
