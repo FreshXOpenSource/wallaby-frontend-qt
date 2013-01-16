@@ -1,8 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Copyright (c) by it's authors. 
 # Some rights reserved. See LICENSE, AUTHORS.
-
-# -*- coding: utf-8 -*-
 
 import wallaby.FX as FX
 import wallaby.FXUI as FXUI
@@ -14,7 +14,7 @@ from wallaby.common.pathHelper import PathHelper
 from wallaby.pf.peer.embeddedViewer import *
 
 class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
-    def __init__(self, widget, room, path, cols=['_id'], parent=None, conflictCB=None, isList=True, identifier=None, reverseOrder=False, minRowHeight=None, minColumnWidth=None, wrapInList=False, *args):
+    def __init__(self, widget, room, path, cols=['_id'], parent=None, conflictCB=None, isList=True, identifier=None, reverseOrder=False, minRowHeight=None, minColumnWidth=None, wrapInList=False, sizeHints=None, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
 
         self._peer   = EmbeddedViewer(room, path, delegate=self, conflictCB=conflictCB, isList=isList, wrapInList=wrapInList, identifier=identifier)
@@ -26,9 +26,11 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
 
         self._minRowHeight = 0
         self._minColumnWidth = 0
+        self._sizeHints = {}
 
         if minRowHeight != None: self._minRowHeight = int(float(minRowHeight))
         if minColumnWidth != None: self._minColumnWidth = int(float(minColumnWidth))
+        if sizeHints != None: self._sizeHints = sizeHints
 
         self._isList   = isList
         self._wrapInList = wrapInList
@@ -367,54 +369,161 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
         elif role != QtCore.Qt.EditRole and role != QtCore.Qt.DisplayRole and role != QtCore.Qt.SizeHintRole:  
             return None
 
+        row = index.row()
+        if self.rowCount(self._parent) <= row: return None
+
+        col = index.column()
+        if len(self._columns) <= col: return None
+ 
+
         if role == QtCore.Qt.SizeHintRole:
-            size = QtCore.QSize(self._minColumnWidth, self._minRowHeight)
+            if self._columns[col] in self._sizeHints and isinstance(self._sizeHints[self._columns[col]], dict):
+                hint = self._sizeHints[self._columns[col]]
+                w = self._minColumnWidth
+                h = self._minRowHeight
+                if 'width' in hint and hint['width'] is not None: w = int(hint['width'])
+                if 'height' in hint and hint['height'] is not None: h = int(hint['height'])
+                # print w, h, col
+                return QtCore.QSize(w, h)
+            else:
+                size = QtCore.QSize(self._minColumnWidth, self._minRowHeight)
 
             # if isinstance(val, QtGui.QPixmap):
             #     size.setWidth(max(val.width()+1, size.width()))
             #     size.setHeight(max(val.height(), size.height()))
             return size
 
-        row = index.row()
+        key = self.getKey(row)
 
-        if self.rowCount(self._parent) <= row:
-            return None
+        path = self._columns[col]
+        type = self._types[col]
+        typeArg = self._typeArgs[col]
+
+        pathes = []
+        types = []
+        typeArgs = []
+        
+        if path != None and '|' in path:
+            pathes = path.split('|')
+
+            if type != None and '|' in type:
+                types = type.split('|')
+            else:
+                for p in pathes: types.append(type)
+
+            if typeArg != None and '|' in typeArg:
+                typeArgs = typeArg.split('|')
+            else:
+                for p in pathes: typeArgs.append(typeArg)
+
+            type = types[-1]
+            for i in range(len(types), len(pathes)):
+                types.append(type)
+
+            typeArg = typeArgs[-1]
+            for i in range(len(typeArgs), len(pathes)):
+                typeArgs.append(typeArg)
         else:
-            col = index.column()
-            if len(self._columns) <= col:
-                return None
+            pathes = [path] 
+            types = [type]
+            typeArgs = [typeArg]
 
-            key = self.getKey(row)
+        i = 0
+        for i in range(len(pathes)):
+            path = pathes[i]
+            type = types[i]
+            typeArg = typeArgs[i]
 
-            if self._columns[col] == '*':
+            if path == '*':
                 if (self._isList and key < len(self._data)) or key in self._data:
                     val = self._data[key]
                 else:
                     val = u""
-            elif self._columns[col] == '__key__':
+            elif path == '__key__':
                 val = key
             else:
-                val = PathHelper.getValue(self._data[key], self._columns[col])
+                val = PathHelper.getValue(self._data[key], path)
                 # print "get", key, self._data[key], self._columns[col], val
 
-            if self._types[col] == "image":
+            if type == "imagelist":
+                if not isinstance(val, list):
+                    continue
+
+                images = []
+
+                for dct in val:
+                    if isinstance(dct, (unicode, str)):
+                        images.append(dct)
+                    elif isinstance(dct, dict):
+                        if typeArg in dct:
+                            images.append(dct[typeArg])
+                    elif isinstance(dct, list):
+                        if typeArg != None and int(typeArg) < len(dct):
+                            images.append(dct[int(typeArg)])
+
+                if str(images) in self._imageCache:
+                    return self._imageCache[str(images)]
+
+                dList = []
+
+                for img in images:
+                    dList.append(self._peer.getImage(img))
+
+                d = defer.DeferredList(dList)
+                d.addCallback(partial(self._updateField, row, col, str(images)))
+                return  [QtGui.QPixmap()]
+
+            if type == "image":
                 if val in self._imageCache:
                     val = self._imageCache[val]
                 else:
+                    if not self._peer.hasImage(val):
+                        val = None
+                        continue
+
                     d = self._peer.getImage(val)
                     d.addCallback(partial(self._updateField, row, col, val))
                     val = QtGui.QPixmap()
             else:
-                val = FXUI.renderType(val, self._types[col], self._typeArgs[col], role == QtCore.Qt.EditRole) 
-            return val
+                val = FXUI.renderType(val, type, typeArg, role == QtCore.Qt.EditRole) 
+
+            if val != None:
+                return val
+        return val
 
     def _updateField(self, row, col, path, val):
-        img = QtGui.QImage.fromData(val).scaled(128, 128, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        p = QtGui.QPixmap()
-        if img != None:
-            p.convertFromImage(img)
+        if isinstance(val, list):
+            lst = []
+            for success, value in val:
+                if success:
+                    lst.append(value)
+        else:
+            lst = [val]
 
-        self._imageCache[path] = p
+        pixmaps = []
+
+        for val in lst:
+            img = QtGui.QImage.fromData(val)
+            if img.width() > 0:
+                origPath = self._columns[col]
+                h = 128
+                w = 128
+                if origPath in self._sizeHints:
+                    hint = self._sizeHints[origPath]
+                    if 'width' in hint and hint['width'] is not None: w = int(hint['width'])
+                    if 'height' in hint and hint['height'] is not None: h = int(hint['height'])
+
+                # print "Scale", row, col, w, h
+                img = img.scaled(w, h, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+
+            p = QtGui.QPixmap()
+            if img != None:
+                p.convertFromImage(img)
+
+            pixmaps.append(p)
+
+        # print "Caching", row, col, path
+        self._imageCache[path] = pixmaps
         self.dataChanged.emit(self.index(row, col), self.index(row, col))
         return val
 

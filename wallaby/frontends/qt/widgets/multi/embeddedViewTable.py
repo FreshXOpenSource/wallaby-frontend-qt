@@ -22,6 +22,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
     isList       = Meta.property("bool", default=True)
     dbColumns    = Meta.property("list")
     wrapInList   = Meta.property("bool")
+    sizeHints  = Meta.property("dict")
 
     notSelectableIfDisabled = Meta.property("bool", default=False)
 
@@ -153,13 +154,16 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         col = 0
         for t in self._types:
             hasDelegate = False
+            if t is None: 
+                col = col + 1
+                continue
             if isinstance(t, dict):
                 for k, v in t.items():
                     if not hasDelegate and len(v) > 0 and v[0] == ':':
                         self.setItemDelegateForColumn(col, self._imageDelegate)
                         self._autoColumns.append(col)
                         hasDelegate = True
-            elif t == "image":
+            elif "image" in t:
                 self.setItemDelegateForColumn(col, self._imageDelegate)
                 self._autoColumns.append(col)
                 hasDelegate = True
@@ -173,7 +177,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
             col = col + 1
 
         from wallaby.frontends.qt.models.embeddedViewTableModel import EmbeddedViewTableModel
-        self._model = EmbeddedViewTableModel(self, self.room, self.path, self.dbColumns, conflictCB=self._conflict, isList=self.isList, identifier=self.identifier, reverseOrder=self.reverseOrder, minRowHeight=self.minRowHeight, minColumnWidth=self.minColumnWidth, wrapInList=self.wrapInList)
+        self._model = EmbeddedViewTableModel(self, self.room, self.path, self.dbColumns, conflictCB=self._conflict, isList=self.isList, identifier=self.identifier, reverseOrder=self.reverseOrder, minRowHeight=self.minRowHeight, minColumnWidth=self.minColumnWidth, wrapInList=self.wrapInList, sizeHints=self.sizeHints)
 
         if FXUI.mainWindow.options() != None and FXUI.mainWindow.options().app != "inspector":
             self._proxyModel = QtGui.QSortFilterProxyModel(self)

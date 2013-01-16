@@ -13,6 +13,8 @@ from wallaby.pf.peer.viewer import *
 class Label(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic):
     __metaclass__ = QWallabyMeta
 
+    markdown = Meta.property('bool')
+
     def __init__(self, *args):
         QtGui.QLabel.__init__(self, *args)
         BaseWidget.__init__(self, QtGui.QLabel, *args)
@@ -46,6 +48,10 @@ class Label(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic):
         ViewLogic.register(self)
 
     def _setText(self, text):
+        if self.markdown:
+            import markdown
+            text = markdown.markdown(text)
+
         if self.textFormat() == QtCore.Qt.RichText:
             import re
 
