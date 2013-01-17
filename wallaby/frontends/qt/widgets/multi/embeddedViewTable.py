@@ -34,6 +34,8 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
     minRowHeight = Meta.property("int", extended=True)
     minColumnWidth = Meta.property("int", extended=True)
 
+    editOnInsert = Meta.property("bool")
+
     triggers = Meta.property("list", readOnly=True, default=["", "clicked", "double-clicked", "key"])
 
     def __init__(self, parent = None):
@@ -53,6 +55,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         self._ignoreClick = False
 
         self._proxyModel = None
+        self._selectedRow = None
 
         self.setAlternatingRowColors(True)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
@@ -72,14 +75,21 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         self._progressDelegate = ProgressDelegate()
         self._comboDelegates = []
 
+    def editCell(self, row, col):
+        idx = self._model.createIndex(row, col)
+        if self._proxyModel is not None:
+            idx = self._proxyModel.mapFromSource(idx)
+
+        print "Set index", QtGui.QTableView.setCurrentIndex(self, idx)
+        print "EDIT", QtGui.QTableView.edit(self, idx, QtGui.QTableView.AllEditTriggers, None)  
+
     def selectRow(self, row):
-        if self._proxyModel is None:
-            QtGui.QTableView.selectRow(self, row)   
-        else:
+        if self._proxyModel is not None:
             idx = self._model.createIndex(row, 0)
             idx = self._proxyModel.mapFromSource(idx)
-            QtGui.QTableView.selectRow(self, idx.row())   
-        
+            row = idx.row()   
+
+        QtGui.QTableView.selectRow(self, row)   
 
     def newData(self):
         if not self.autoResizeCells: return
@@ -121,7 +131,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         EditLogic.register(self)
         TriggeredPillowsLogic.register(self)
 
-        if not (isinstance(self.dbColumns, list) and len(self.dbColumns) > 0 and isinstance(self.dbColumns[0], dict)):
+        if isinstance(self.dbColumns, list) and len(self.dbColumns) > 0 and isinstance(self.dbColumns[0], (str, unicode)):
             columns, labels = FX.splitList(self.dbColumns, ':')
             types, args, columns = FX.extractType(columns, json=False)
 
@@ -177,7 +187,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
             col = col + 1
 
         from wallaby.frontends.qt.models.embeddedViewTableModel import EmbeddedViewTableModel
-        self._model = EmbeddedViewTableModel(self, self.room, self.path, self.dbColumns, conflictCB=self._conflict, isList=self.isList, identifier=self.identifier, reverseOrder=self.reverseOrder, minRowHeight=self.minRowHeight, minColumnWidth=self.minColumnWidth, wrapInList=self.wrapInList, sizeHints=self.sizeHints)
+        self._model = EmbeddedViewTableModel(self, self.room, self.path, self.dbColumns, conflictCB=self._conflict, isList=self.isList, identifier=self.identifier, reverseOrder=self.reverseOrder, minRowHeight=self.minRowHeight, minColumnWidth=self.minColumnWidth, wrapInList=self.wrapInList, sizeHints=self.sizeHints, editOnInsert=self.editOnInsert)
 
         if FXUI.mainWindow.options() != None and FXUI.mainWindow.options().app != "inspector":
             self._proxyModel = QtGui.QSortFilterProxyModel(self)
@@ -254,5 +264,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
             else:
                 sel = sel[0]
 
-            self._model.doSelect(sel.row())
+            self._selectedRow = sel.row()
+
+            self._model.doSelect(self._selectedRow)
             self.scrollTo(sel)

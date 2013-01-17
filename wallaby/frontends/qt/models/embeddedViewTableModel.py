@@ -14,10 +14,10 @@ from wallaby.common.pathHelper import PathHelper
 from wallaby.pf.peer.embeddedViewer import *
 
 class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
-    def __init__(self, widget, room, path, cols=['_id'], parent=None, conflictCB=None, isList=True, identifier=None, reverseOrder=False, minRowHeight=None, minColumnWidth=None, wrapInList=False, sizeHints=None, *args):
+    def __init__(self, widget, room, path, cols=['_id'], parent=None, conflictCB=None, isList=True, identifier=None, reverseOrder=False, minRowHeight=None, minColumnWidth=None, wrapInList=False, sizeHints=None, editOnInsert=False, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
 
-        self._peer   = EmbeddedViewer(room, path, delegate=self, conflictCB=conflictCB, isList=isList, wrapInList=wrapInList, identifier=identifier)
+        self._peer   = EmbeddedViewer(room, path, delegate=self, conflictCB=conflictCB, isList=isList, wrapInList=wrapInList, identifier=identifier, editOnInsert=editOnInsert)
         self._widget = widget
 
         self._reverseOrder = reverseOrder
@@ -82,6 +82,14 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
 
     def doSelect(self, row):
         self._peer.select(self.getKey(row))
+
+    def editRow(self, key):
+        row = self.getRow(key)
+        if row != None:
+            for col in range(len(self._types)):
+                if self._types[col] in ("dictedit", "listedit", "autoedit", "stringedit", "doubleedit", "numberedit", "currencyedit", "comboedit"):
+                    self._widget.editCell(row, col)
+                    return 
 
     def selectRow(self, key):
         row = self.getRow(key)

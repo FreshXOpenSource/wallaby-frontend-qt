@@ -281,7 +281,7 @@ class MultiViewTable(QtGui.QTableView, BaseWidget, EnableLogic, ContextMenuLogic
         else:
             self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
 
-        if not (isinstance(self.dbColumns, list) and len(self.dbColumns) > 0 and isinstance(self.dbColumns[0], dict)):
+        if isinstance(self.dbColumns, list) and len(self.dbColumns) > 0 and isinstance(self.dbColumns[0], (str, unicode)):
             columns, labels = FX.splitList(self.dbColumns, ':')
             types, args, columns = FX.extractType(columns, json=False)
 

@@ -18,12 +18,12 @@ class ComboBoxDelegate(QtGui.QItemDelegate):
         from wallaby.frontends.qt.widgets.combo.comboBox import ComboBox
         editor = ComboBox(parent)
         editor.activated.connect(self._commitAndCloseEditor)
+        print "Create Editor", parent.parent().objectName() + unicode(index.column())
         editor.setObjectName(parent.parent().objectName() + unicode(index.column()))
         return editor
 
     def setEditorData(self, editor, index):
         print "Set Data"
-        FX.mainWindow.configure(onlyNew=True)
         pass
 
     def setModelData(self, editor, model, index):
