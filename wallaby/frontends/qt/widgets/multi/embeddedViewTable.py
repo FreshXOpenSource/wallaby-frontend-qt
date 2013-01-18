@@ -57,12 +57,14 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         self._proxyModel = None
         self._selectedRow = None
 
+        self._isEnabled = False
+
         self.setAlternatingRowColors(True)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
         self.verticalHeader().sectionMoved.connect(self.reorderRows)
-        self.verticalHeader().setMovable(True) 
+        self.verticalHeader().setMovable(False) 
 
         self.verticalHeader().sectionClicked.connect(self._itemClicked)
 
@@ -123,6 +125,8 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         self._actionPeer = None
 
     def reorderRows(self, row, oldIndex, newIndex):
+        if not self._isEnabled: return
+
         if self._model != None:
             self._model.reorderRows(row, oldIndex, newIndex)
 
@@ -226,6 +230,10 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         self.trigger("clicked")
 
     def setEnabled(self, enabled):
+        self._isEnabled = enabled
+
+        self.verticalHeader().setMovable(enabled) 
+
         if self.notSelectableIfDisabled:
             QtGui.QTableView.setEnabled(self, enabled)
             return

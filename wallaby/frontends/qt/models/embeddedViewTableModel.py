@@ -125,6 +125,10 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
 
     def changedCB(self):
         idx = self._widget.selectedIndexes()
+
+        # clear cache
+        self._imageCache = {}
+
         if len(idx) > 1:
             self.dataChanged.emit(idx[0], idx[1])
         elif len(idx) > 0:
@@ -341,8 +345,29 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
                     self._peer.select(val)
                 else:
                     PathHelper.setValue(self._data[key], self._columns[col], val)
+            elif vtype in ("booledit"):
+                val = False
+                if isinstance(value, (unicode, str)):
+                    try:
+                        val = bool(value)
+                    except: pass
+                elif isinstance(value, (bool)):
+                    val = value
 
-            if vtype in ("stringedit", "doubleedit", "numberedit", "currencyedit"):
+                if self._columns[col] == '*':
+                    self._data[key] = val
+                elif not self._isList and self._columns[col] == '__key__':
+                    self._data[val] = self._data[key]
+                    del self._data[key]
+                    del self._rows[self._keys[row]]
+                    self._keys[row] = val
+                    self._rows[val] = row
+                    self._peer.select(val)
+                else:
+                    PathHelper.setValue(self._data[key], self._columns[col], val)
+ 
+
+            if vtype in ("stringedit", "doubleedit", "numberedit", "currencyedit", "booledit"):
                 self.dataChanged.emit(index, index)
                 self._peer.fieldChanged(key, self._columns[col])
                 return True
@@ -356,7 +381,7 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
             else:
                 return key
         else:
-            if key not in self._rows:
+            if self._rows is not None and key not in self._rows:
                 return len(self._rows)
 
             return self._rows[key] 

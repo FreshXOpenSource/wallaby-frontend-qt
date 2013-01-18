@@ -30,7 +30,8 @@ class LineEdit(QtGui.QLineEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic, E
         EnterPillowLogic.__init__(self, self.returnPressed)
         TriggeredPillowsLogic.__init__(self)
 
-        self._readOnly = self.isReadOnly()
+        self._firstAccess = True
+        self._readOnly = False
 
         self._changed = False
 
@@ -63,6 +64,10 @@ class LineEdit(QtGui.QLineEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic, E
         self._changed = True
 
     def _setEnabled(self, enabled):
+        if self._firstAccess:
+            self._readOnly = self.isReadOnly()
+            self._firstAccess = False
+
         if self._readOnly: return
 
         if self.hideIfDisabled:

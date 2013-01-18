@@ -49,6 +49,7 @@ class ImageLabel(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         self._changeImage(value)
 
     def setEnabled(self, enabled):
+        self._readOnly = not enabled
         QtGui.QLabel.setEnabled(self, True)
 
     def currentImage(self):
@@ -63,11 +64,12 @@ class ImageLabel(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic, EditLogic):
             self._popup.raise_()
             return
 
-        name = QtGui.QFileDialog.getOpenFileName(self, "Select new image", QtCore.QString(), "Images (*.png *.jpg *.jpeg)")
-        if name == None:
+        name = QtGui.QFileDialog.getOpenFileName(self, "Select new image", "", "Images (*.png *.jpg *.jpeg)")
+        if name == None or len(name) == 0:
             return
 
         imgName = unicode(name)
+        import os.path
         imgName = os.path.basename(imgName)
         self._imageName = imgName
 

@@ -47,6 +47,8 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         self._changed = True
         self._lastValue = None
 
+        self._subPath = None
+
         self._listPeer = None
         self._viewPeer = None
         self._multiViewer = None
@@ -158,18 +160,32 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         if self.isView:
             self._multiViewer = MultiViewer(self.room, self.view, self.viewIdentifier, self.viewArguments, self.dataView, self, autoUpdate=True)
         elif self.source != None:
-            if ':' in self.source:
-                room, source = self.source.split(':') 
-            else:
-                room = self.room
-                source = self.source
+            if self.sourcePath != None:
+                if ':' in self.source:
+                    room, source = self.source.split(':') 
+                else:
+                    room = self.room
+                    source = self.source
 
-            if source == "__DOC__":
-                self._listPeer = Viewer(room, self._fillComboBox, self.sourcePath, raw=True)
-            else:
-                self._listPeer = ListPeer(room, self._fillComboBox, self.sourcePath, source)
+                if '|' in self.sourcePath:
+                    sourcePath, self._subPath = self.sourcePath.split('|')
+                else:
+                    sourcePath = self.sourcePath
+                    self._subPath = None
+
+                if source == "__DOC__":
+                    self._listPeer = Viewer(room, self._fillComboBox, sourcePath, raw=True)
+                else:
+                    self._listPeer = ListPeer(room, self._fillComboBox, sourcePath, source)
         else:
-            self._viewPeer = Viewer(self.room, self._fillComboBox, self.sourcePath)
+            if self.sourcePath != None:
+                if '|' in self.sourcePath:
+                    sourcePath, self._subPath = self.sourcePath.split('|')
+                else:
+                    sourcePath = self.sourcePath
+                    self._subPath = None
+
+                self._viewPeer = Viewer(self.room, self._fillComboBox, self.sourcePath)
 
     # def mousePressEvent(self, event):
     #     QtGui.QComboBox.mousePressEvent(self, event)
@@ -187,7 +203,7 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         if self.selectPillow != None and val >= 0:
             val = unicode(self.itemText(val))
             if val in self._translate: val = self._translate[val]
-            print val, isinstance(val, (list, tuple))
+            # print val, isinstance(val, (list, tuple))
             House.get(self.room).throw(self.selectPillow, val)
 
         if self._editor and self._changed:
@@ -225,8 +241,14 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         self._translateReverse = {}
         self.clear()
 
-        if "__DOC__" in self.source:
-            titles = document
+        if self.source != None and "__DOC__" in self.source:
+            if document is not None and self._subPath != None:
+                from wallaby.common.pathHelper import PathHelper
+                titles = []
+                for dct in document:
+                    titles.append(PathHelper.getValue(dct, self._subPath))
+            else:
+                titles = document
         else:
             path = self.sourcePath
             if path == None: path = 'titles'

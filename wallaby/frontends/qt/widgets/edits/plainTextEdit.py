@@ -33,8 +33,16 @@ class PlainTextEdit(QtGui.QPlainTextEdit, BaseWidget, EnableLogic, ViewLogic, Ed
         self.textChanged.connect(self._textChanged)
 
     def focusOutEvent ( self, event ):
+        # self.setCursorWidth(0)
+
         if self._editor and self._changed:
             self._editor._fieldChanged()
+
+        QtGui.QPlainTextEdit.focusOutEvent(self, event)
+
+    def focusInEvent ( self, event ):
+        # self.setCursorWidth(1)
+        QtGui.QPlainTextEdit.focusInEvent(self, event)
 
     def _toPlainText (self):
         value = unicode(self.toPlainText())
