@@ -12,10 +12,11 @@ from ..logics import *
 from wallaby.pf.peer.dateViewer import *
 from wallaby.pf.peer.dateEditor import *
 
-class DateEdit(QtGui.QDateEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic):
+class DateTimeEdit(QtGui.QDateTimeEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic):
     __metaclass__ = QWallabyMeta
 
     defaultToNow = Meta.property("bool", extended=True)
+    includeSeconds = Meta.property("bool", default=False)
 
     def __init__(self, *args):
         QtGui.QDateEdit.__init__(self, *args)
@@ -27,7 +28,7 @@ class DateEdit(QtGui.QDateEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         self._changed = True
 
         self._readOnly = self.isReadOnly()
-        self.dateChanged.connect(self._valueChanged)
+        self.dateTimeChanged.connect(self._valueChanged)
 
     def _setEnabled(self, enabled):
         if self._readOnly: return
@@ -48,19 +49,21 @@ class DateEdit(QtGui.QDateEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         EditLogic.register(self)
 
         if self.defaultToNow:
-            d = QtCore.QDate.currentDate()
+            d = QtCore.QDateTime.currentDateTime()
         else:
-            d = QtCore.QDate(1900, 1, 1)
- 
+            d = QtCore.QDateTime(QtCore.QDate(1900, 1, 1))
 
     def _resolve(self, value, **ka):
         self._setValue(value)
         if self._editor: self._editor._resolve(**ka)
 
     def _value(self):
-        d = self.date()
+        d = self.dateTime()
 
-        return [d.year(), d.month(), d.day()]
+        if self.includeSeconds:
+            return [d.date().year(), d.date().month(), d.date().day(), d.time().hour(), d.time().minute(), d.time().second()]
+        else:
+            return [d.date().year(), d.date().month(), d.date().day(), d.time().hour(), d.time().minute()]
 
     def _valueChanged(self, val):
         if self._editor and self._changed:
@@ -69,14 +72,19 @@ class DateEdit(QtGui.QDateEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic):
     def _setValue(self, value):
         if value == None:
             if self.defaultToNow:
-                d = QtCore.QDate.currentDate()
+                d = QtCore.QDateTime.currentDateTime()
             else:
-                d = QtCore.QDate(1900, 1, 1)
+                d = QtCore.QDateTime(QtCore.QDate(1900, 1, 1))
         else:
-            if len(value) >= 3:
-                d = QtCore.QDate(value[0], value[1], value[2])
+            if len(value) >= 5:
+                d = QtCore.QDateTime(QtCore.QDate(value[0], value[1], value[2]))
+                if len(value) >= 6 and self.includeSeconds:
+                    d.setTime(QtCore.QTime(value[3], value[4], value[5]))
+                else:
+                    d.setTime(QtCore.QTime(value[3], value[4]))
+
             
         self._changed = False
-        self.setDate(d)
+        self.setDateTime(d)
         self._changed = True
 
