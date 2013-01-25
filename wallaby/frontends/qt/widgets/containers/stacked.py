@@ -55,15 +55,23 @@ class Stacked(QtGui.QStackedWidget, Container):
                 from twisted.internet import reactor
                 reactor.callLater(0, FX.mainWindow.reloadOverlays)
 
-    def selectByIndex(self, idx):
+    def doSetCurrentIndex(self, idx):
+        if self.currentWidget() is not None:
+            self.currentWidget().setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+
         self.setCurrentIndex(idx)
+        self.currentWidget().setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.adjustSize()
+
+    def selectByIndex(self, idx):
+        self.doSetCurrentIndex(idx)
 
     def selectByName(self, name):
         w = self.findChildren(QtGui.QWidget, name + "Sheet")
-        if w != None and len(w) == 1: self.setCurrentWidget(w[0])
+        if w != None and len(w) == 1: self.doSetCurrentIndex(self.indexOf(w[0]))
         elif self.defaultSheet != None:
             w = self.findChildren(QtGui.QWidget, self.defaultSheet + "Sheet")
-            if w != None and len(w) == 1: self.setCurrentWidget(w[0])
+            if w != None and len(w) == 1: self.doSetCurrentIndex(self.indexOf(w[0]))
             
 
     def deregister(self, remove=False):
