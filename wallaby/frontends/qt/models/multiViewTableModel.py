@@ -207,8 +207,8 @@ class MultiViewTableModel(QtCore.QAbstractTableModel):
             if len(self._columns) <= col or self.rowCount(self.parent) <= row or not self._cache[row]['cache'][col]['cached']:
                 return size
 
-            if row == 0:
-                print "Size", row, col, size.width(), size.height()
+            # if row == 0:
+            #     print "Size", row, col, size.width(), size.height()
 
             val = self._cache[row]['cache'][col]['value']
 

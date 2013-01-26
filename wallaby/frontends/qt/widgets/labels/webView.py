@@ -9,28 +9,37 @@ from ..baseWidget import *
 from ..logics import *
 
 from wallaby.pf.peer.viewer import *
+from wallaby.pf.peer.payloadCallback import *
 
-class Label(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic):
+class WebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic):
     __metaclass__ = QWallabyMeta
 
     markdown = Meta.property('bool')
     codeHighlight = Meta.property('bool')
+    allowExternalLinks = Meta.property('bool', default=False)
+    useValueAsUrl = Meta.property('bool', default=False)
+
+    identifier = Meta.property('string')
 
     def __init__(self, *args):
-        QtGui.QLabel.__init__(self, *args)
-        BaseWidget.__init__(self, QtGui.QLabel, *args)
+        QtWebKit.QWebView.__init__(self, *args)
+        BaseWidget.__init__(self, QtWebKit.QWebView, *args)
         EnableLogic.__init__(self)
         ViewLogic.__init__(self, Viewer, self._setText)
+        self.linkClicked.connect(self._linkActivated)
 
-        self.linkActivated.connect(self._linkActivated)
+        self._backPeer = None
+        self._forwardPeer = None
+        self._reloadPeer = None
 
-    def _linkActivated(self, link):
-        link = unicode(link)
+    def _linkActivated(self, url):
+        link = unicode(url.toString())
         if link.startswith('wallaby://'):
             link = link.replace('wallaby://', '')
             args = None
             if '/' in link:
                 args = link.split('/')
+                _ = args.pop(0)
                 link = args.pop(0)
 
                 if len(args) == 1:
@@ -38,17 +47,50 @@ class Label(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic):
 
             House.get(self.room).throw(link, args)
         else:
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl(link))
+            if self.allowExternalLinks:
+                self.load(url)
+            else:
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl(link))
 
     def deregister(self, remove=False):
         EnableLogic.deregister(self, remove)
         ViewLogic.deregister(self, remove)
 
+        for peer in (self._backPeer, self._forwardPeer, self._reloadPeer):
+            if peer: peer.destroy()
+
+        self._backPeer = None
+        self._forwardPeer = None
+        self._reloadPeer = None
+
     def register(self):
         EnableLogic.register(self)
         ViewLogic.register(self)
 
+        self._backPeer = PayloadCallback(self.room, "WebViewer.In.Back", self._back)
+        self._forwardPeer = PayloadCallback(self.room, "WebViewer.In.Forward", self._forward)
+        self._reloadPeer = PayloadCallback(self.room, "WebViewer.In.Reload", self._reload)
+
+    def _back(self, ident):
+        if self.identifier is None or ident == self.identifier: 
+            self.back() 
+
+    def _forward(self, *args):
+        if self.identifier is None or ident == self.identifier: 
+            self.forward() 
+
+    def _reload(self, *args):
+        if self.identifier is None or ident == self.identifier: 
+            self.reload() 
+
     def _setText(self, text):
+        if self.useValueAsUrl:
+            try:
+                url = QtCore.QUrl(unicode(text))
+                self.load(url) 
+                return
+            except: pass
+
         if self.markdown:
             import markdown
             if self.codeHighlight:
@@ -126,4 +168,5 @@ class Label(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic):
             else:
                 text = markdown.markdown(text, ['fenced_code'])
 
-        self.setText(text)
+        self.setHtml(text)
+        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)

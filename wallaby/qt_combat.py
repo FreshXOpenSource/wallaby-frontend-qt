@@ -13,9 +13,11 @@ try:
         raise ImportError()
     import PySide.QtCore as _QtCore
     import PySide.QtGui as _QtGui
+    import PySide.QtWebKit as _QtWebKit
     import PySide.QtDesigner as _QtDesigner
     QtCore = _QtCore
     QtGui = _QtGui
+    QtWebKit = _QtWebKit
     QtDesigner = _QtDesigner
     USES_PYSIDE = True
 except ImportError:
@@ -24,9 +26,11 @@ except ImportError:
     sip.setapi('QVariant', 2)
     import PyQt4.QtCore as _QtCore
     import PyQt4.QtGui as _QtGui
+    import PyQt4.QtWebKit as _QtWebKit
     import PyQt4.QtDesigner as _QtDesigner
     QtCore = _QtCore
     QtGui = _QtGui
+    QtWebKit = _QtWebKit
     QtDesigner = _QtDesigner
     USES_PYSIDE = False
 

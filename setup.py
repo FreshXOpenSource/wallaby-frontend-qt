@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 import platform, sys
 
 setup(name='wallaby-frontend-qt',
-      version='0.2.40',
+      version='0.2.42',
       url='https://github.com/FreshXOpenSource/wallaby-frontend-qt',
       author='FreshX GbR',
       author_email='wallaby@freshx.de',
@@ -31,5 +31,5 @@ setup(name='wallaby-frontend-qt',
       scripts=["wlby"],
       packages=find_packages('.'),
       include_package_data = True,
-      install_requires=['wallaby-base'] # and PyQt or PySide ... currently from brew/yum/apt-get
+      install_requires=['wallaby-base','markdown'] # and PyQt or PySide ... currently from brew/yum/apt-get
   )
