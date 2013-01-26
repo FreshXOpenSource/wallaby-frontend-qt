@@ -11,7 +11,7 @@ from ..logics import *
 from wallaby.pf.peer.viewer import *
 from wallaby.pf.peer.payloadCallback import *
 
-class WebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic):
+class WebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, TriggeredPillowsLogic):
     __metaclass__ = QWallabyMeta
 
     markdown = Meta.property('bool')
@@ -21,16 +21,22 @@ class WebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic):
 
     identifier = Meta.property('string')
 
+    triggers = Meta.property("list", readOnly=True, default=["", "double-clicked"])
+
     def __init__(self, *args):
         QtWebKit.QWebView.__init__(self, *args)
         BaseWidget.__init__(self, QtWebKit.QWebView, *args)
         EnableLogic.__init__(self)
         ViewLogic.__init__(self, Viewer, self._setText)
+        TriggeredPillowsLogic.__init__(self)
         self.linkClicked.connect(self._linkActivated)
 
         self._backPeer = None
         self._forwardPeer = None
         self._reloadPeer = None
+
+    def mouseDoubleClickEvent(self, e):
+        self.trigger("double-clicked")
 
     def _linkActivated(self, url):
         link = unicode(url.toString())
@@ -55,6 +61,7 @@ class WebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic):
     def deregister(self, remove=False):
         EnableLogic.deregister(self, remove)
         ViewLogic.deregister(self, remove)
+        TriggeredPillowsLogic.deregister(self, remove)
 
         for peer in (self._backPeer, self._forwardPeer, self._reloadPeer):
             if peer: peer.destroy()
@@ -66,6 +73,7 @@ class WebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic):
     def register(self):
         EnableLogic.register(self)
         ViewLogic.register(self)
+        TriggeredPillowsLogic.register(self)
 
         self._backPeer = PayloadCallback(self.room, "WebViewer.In.Back", self._back)
         self._forwardPeer = PayloadCallback(self.room, "WebViewer.In.Forward", self._forward)
