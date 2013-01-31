@@ -123,6 +123,8 @@ def startDesigner(options):
     # env['PYTHONPATH'] = '.'
     qenv = ['%s=%s' % (name, value) for name, value in env.items()]
 
+    # print qenv
+
     # Start Designer.
     designer = QtCore.QProcess()
     designer.setEnvironment(qenv)

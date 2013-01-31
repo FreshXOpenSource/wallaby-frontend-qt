@@ -51,7 +51,7 @@ class LineEdit(QtGui.QLineEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic, E
     def _textEdited(self, *args):
         if self.throwWhileEditing and self._changed:
             self.trigger("changed")
-            self._editor._fieldChanged()
+            if self._editor: self._editor._fieldChanged()
 
         self._changed = True
 

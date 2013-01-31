@@ -109,6 +109,28 @@ class EnableLogic(object):
         else:
             self.setEnabled(enabled)
 
+class QueryLogic(object):
+    __metaclass__ = QWallabyMeta
+
+    view = Meta.property("string")
+    viewArguments = Meta.property("string")
+    viewIdentifier = Meta.property("string")
+    dataView = Meta.property("string")
+
+    def __init__(self):
+        self._queryPeer = None
+
+    def register(self, **viewerArgs):
+        from wallaby.pf.peer.multiViewer import MultiViewer
+        self._queryPeer = MultiViewer(self.room, self.view, self.viewIdentifier, self.viewArguments, self.dataView, self, autoUpdate=True)
+
+    def initialData(self): 
+        pass
+
+    def deregister(self, remove=False):
+        if self._queryPeer: self._queryPeer.destroy(remove)
+        self._queryPeer = None
+
 class ViewLogic(object):
     __metaclass__ = QWallabyMeta
 
