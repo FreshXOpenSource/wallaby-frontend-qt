@@ -16,7 +16,7 @@ from wallaby.pf.peer.multiViewer import *
 from wallaby.pf.peer.editor import *
 from twisted.internet import defer
 
-class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
+class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, TriggeredPillowsLogic):
     __metaclass__ = QWallabyMeta
 
     isEditor = Meta.property("bool")
@@ -36,12 +36,15 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
     viewDisplayPath = Meta.property("string", extended=True)
     throwWhileEditing = Meta.property("bool", extended=True)
 
+    triggers = Meta.property("list", readOnly=True, default=["", "enter", "key"])
+
     def __init__(self, *args):
         QtGui.QComboBox.__init__(self, *args)
         BaseWidget.__init__(self, QtGui.QComboBox, *args)
         EnableLogic.__init__(self)
         ViewLogic.__init__(self, Viewer, self._setItemText)
         EditLogic.__init__(self, Editor, self._currentText)
+        TriggeredPillowsLogic.__init__(self)
 
         self.sourceVal = None
         self._changed = True
@@ -83,6 +86,7 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
     def deregister(self, remove=False):
         EnableLogic.deregister(self, remove)
         ViewLogic.deregister(self, remove)
+        TriggeredPillowsLogic.deregister(self, remove)
         if self.lineEdit() != None: EditLogic.deregister(self, remove)
 
         if self._listPeer: self._listPeer.destroy(remove)
@@ -151,6 +155,8 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
     def register(self):
         EnableLogic.register(self)
         ViewLogic.register(self)
+        TriggeredPillowsLogic.register(self)
+
         if self.isEditor != None: EditLogic.register(self, raw=True)
 
         if not self._registered:
@@ -159,6 +165,7 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
             if self.lineEdit() != None:
                 self.lineEdit().textChanged.connect(self._textChanged)
                 self.lineEdit().editingFinished.connect(self._editingFinished)
+                self.lineEdit().returnPressed.connect(partial(self.trigger, "enter", None))
 
         if self.isView:
             self._multiViewer = MultiViewer(self.room, self.view, self.viewIdentifier, self.viewArguments, self.dataView, self, autoUpdate=True)

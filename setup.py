@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 import platform, sys
 
 setup(name='wallaby-frontend-qt',
-      version='0.2.45',
+      version='0.2.46',
       url='https://github.com/FreshXOpenSource/wallaby-frontend-qt',
       author='FreshX GbR',
       author_email='wallaby@freshx.de',
