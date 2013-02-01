@@ -32,6 +32,7 @@ class LineEdit(QtGui.QLineEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic, E
 
         self._firstAccess = True
         self._readOnly = False
+        self.__gotText = False
 
         self._changed = False
 
@@ -102,9 +103,10 @@ class LineEdit(QtGui.QLineEdit, BaseWidget, EnableLogic, ViewLogic, EditLogic, E
         self.setFocus()
 
     def _setText(self, val):
-        if self.text() != val:
+        if self.text() != val or not self.__gotText:
             self._changed = False
             self.setText(val)
+            self.__gotText = True
             self._changed = True
 
     def _docCB(self, document):

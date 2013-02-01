@@ -56,6 +56,9 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         self._translateReverse = {}
         self.currentIndexChanged.connect(self._selectOther)
 
+    def initialData(self):
+        pass
+
     def _currentText(self):
         text = unicode(self.currentText())
         if text in self._translate:
