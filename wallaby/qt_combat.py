@@ -2,6 +2,7 @@
 # Copyright (c) by it's authors. 
 # Some rights reserved. See LICENSE, AUTHORS.
 
+# Forked from https://github.com/PythonUtils/util/qt_compat.py 
 
 from __future__ import with_statement
 from __future__ import division
