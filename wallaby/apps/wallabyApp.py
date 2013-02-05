@@ -123,8 +123,10 @@ class WallabyApp(object):
     def run(self, mod, options, checkRoom): 
         if options is not None:
             authenticated = yield FXUI.mainWindow.authenticated(options.username, options.password, options)
+            if authenticated: FX.user = options.username
         else:
             authenticated = yield FXUI.mainWindow.authenticated()
+            if authenticated: FX.user = "anonymous"
 
         count = 0
         while not authenticated:
@@ -137,14 +139,13 @@ class WallabyApp(object):
 
             try:
                 authenticated = yield FXUI.mainWindow.authenticated(unicode(dlg.userEdit.text()), unicode(dlg.pwdEdit.text()), options)
+                if authenticated: FX.user = dlg.userEdit.text()
             except:
                 return
 
             count += 1
 
         from twisted.internet import reactor
-
-        FX.user = dlg.userEdit.text()
 
         if options is not None: FXUI.mainWindow.setDebuggedRooms(options.debug)
         FXUI.mainWindow.run(checkRoom)
