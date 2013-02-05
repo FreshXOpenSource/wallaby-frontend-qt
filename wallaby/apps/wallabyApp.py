@@ -144,6 +144,8 @@ class WallabyApp(object):
 
         from twisted.internet import reactor
 
+        FX.user = dlg.userEdit.text()
+
         if options is not None: FXUI.mainWindow.setDebuggedRooms(options.debug)
         FXUI.mainWindow.run(checkRoom)
         FXUI.mainWindow.enabled = True
