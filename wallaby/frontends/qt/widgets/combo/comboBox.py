@@ -228,19 +228,22 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, T
 
             if val in self._translateReverse: val = self._translateReverse[val]
             exists = False
-            self.setCurrentIndex(0)
             for i in range(self.count()):
                 if val == unicode(self.itemText(i)):
                     self.setCurrentIndex(i)
                     exists = True
             if not exists:
-                self.setCurrentIndex(0)
                 if self.lineEdit() != None:
+                    self.setCurrentIndex(-1)
                     self.lineEdit().setText(unicode(val))
+                else:
+                    self.setCurrentIndex(0)
         else:
-            self.setCurrentIndex(0)
             if self.lineEdit() != None:
+                self.setCurrentIndex(-1)
                 self.lineEdit().setText(u"")
+            else:
+                self.setCurrentIndex(0)
 
         self._changed = True
 
@@ -264,6 +267,8 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, T
             if path == None: path = 'titles'
             titles = document.get(path)
 
+        found = False
+
         if titles:
             for i in range(len(titles)):
                 value = titles[i]
@@ -279,5 +284,10 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, T
                 self.insertItem(i, displayValue)
                 if value == self._lastValue:
                     self.setCurrentIndex(i)
+                    found = True
+
+        if not found and self._lastValue != None and self.lineEdit() != None:
+            self.setCurrentIndex(-1)
+            self.lineEdit().setText(self._lastValue)
 
         self._changed = True
