@@ -21,6 +21,8 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
     triggers = Meta.property("list", readOnly=True, default=["", "clicked"])
     templateName = Meta.property("string")
 
+    ignoreSSLErrors = Meta.property("bool")
+
     def __init__(self, *args):
         QtWebKit.QWebView.__init__(self, *args)
         BaseWidget.__init__(self, QtWebKit.QWebView, *args)
@@ -44,6 +46,7 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
 
         self._index = "<html><body>Template not found</body></html>"
         self._content = ""
+        self._content_js = ""
         self._scripts = {}
         self._styles = {}
 
@@ -51,6 +54,7 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         self.page().settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, True)
         self.page().settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
         self.page().settings().setAttribute(QtWebKit.QWebSettings.XSSAuditingEnabled, False)
+        self.page().settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
 
     def _registerObjects(self):
         self.page().mainFrame().addToJavaScriptWindowObject("wallaby", self._webRoom)
@@ -93,6 +97,9 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
             if os.path.exists(os.path.join(FX.appPath, "templates", self.templateName, "content.html")):
                 self._content = codecs.open(os.path.join(FX.appPath, "templates", self.templateName, "content.html"), "r", "utf-8").read()
 
+            if os.path.exists(os.path.join(FX.appPath, "templates", self.templateName, "content.js")):
+                self._content_js = codecs.open(os.path.join(FX.appPath, "templates", self.templateName, "content.js"), "r", "utf-8").read()
+
             import pystache
             self._index = pystache.render(unicode(self._index), {"scripts": self._scripts, "styles": self._styles})
 
@@ -102,10 +109,27 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
             
         else:
             self.setHtml(unicode(self._index))
+
+        if self.ignoreSSLErrors:
+            self.page().networkAccessManager().sslErrors.connect(self._sslErrorHandler)
+
+    def _sslErrorHandler(self, reply, errorList):
+        # Ignore SSL Error!! Fix Me
+        reply.ignoreSslErrors()
+        return
     
-    def _setData(self, data):
+    def _setData(self, _data):
+        data = _data
+        if isinstance(_data, dict):
+            data = []
+            for key in sorted(_data.keys()):
+                data.append({"key": key, "value": _data[key]})
+
         import pystache
         page = pystache.render(unicode(self._content), {"data": data})
-         
+
         e = self.page().mainFrame().findFirstElement('#content')
         e.setInnerXml(page)
+
+        if self._content_js != None:
+            self.page().mainFrame().evaluateJavaScript(self._content_js)
