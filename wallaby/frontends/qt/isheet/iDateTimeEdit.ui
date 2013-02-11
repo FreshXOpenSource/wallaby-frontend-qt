@@ -45,6 +45,9 @@
         <property name="text">
          <string>Include seconds</string>
         </property>
+        <property name="template" stdset="0">
+         <string>inspector-cb-includeseconds</string>
+        </property>
        </widget>
       </item>
      </layout>
