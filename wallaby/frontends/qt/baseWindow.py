@@ -72,6 +72,8 @@ class BaseWindow(BaseApp, QtGui.QMainWindow):
             else:
                 FXUI.configEditor.authenticated()
 
+            House.get("__CONFIG__").throw(Room.In.Initialize, True)
+
         if FXUI.configEditor != None and not FXUI.configEditor.isVisible(): FXUI.configEditor.show()
 
         from wallaby.pf.peer.documentChanger import DocumentChanger
