@@ -93,21 +93,15 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
             if os.path.exists(os.path.join(FX.appPath, "templates", self.templateName, "content.html")):
                 self._content = codecs.open(os.path.join(FX.appPath, "templates", self.templateName, "content.html"), "r", "utf-8").read()
 
-            import glob
-            for js in glob.glob(os.path.join(FX.appPath, "templates", self.templateName, "*.js")):
-                name, _ = os.path.splitext(os.path.basename(js))
-                script = codecs.open(js, "r", "utf-8").read()
-                self._scripts[name] = script
-
-            for css in glob.glob(os.path.join(FX.appPath, "templates", self.templateName, "*.css")):
-                name, _ = os.path.splitext(os.path.basename(css))
-                style = codecs.open(css, "r", "utf-8").read()
-                self._styles[name] = style
-
             import pystache
             self._index = pystache.render(unicode(self._index), {"scripts": self._scripts, "styles": self._styles})
 
-        self.setHtml(unicode(self._index))
+        if os.path.exists(os.path.join(FX.appPath, "templates", self.templateName, "index.html")):
+            url = QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(FX.appPath, "templates", self.templateName, "index.html")))
+            self.setHtml(unicode(self._index), url)
+            
+        else:
+            self.setHtml(unicode(self._index))
     
     def _setData(self, data):
         import pystache
