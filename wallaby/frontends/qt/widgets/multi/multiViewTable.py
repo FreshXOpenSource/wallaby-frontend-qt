@@ -186,7 +186,6 @@ class MultiViewTable(QtGui.QTableView, BaseWidget, EnableLogic, ContextMenuLogic
 
     def initialData(self):
         if not self.autoResizeCells: return
-        print "Initial"
 
         self.horizontalHeader().resizeSections(QtGui.QHeaderView.ResizeToContents)
         self.verticalHeader().resizeSections(QtGui.QHeaderView.ResizeToContents)
