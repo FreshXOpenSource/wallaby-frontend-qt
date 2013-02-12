@@ -178,8 +178,13 @@ def startDesigner(options):
 
     else:
         for path in appPath:
-            path = os.path.join(path, "mainWindow.ui")
-            if os.path.exists(path):
+            if options.module == "WallabyApp2" and os.path.exists(os.path.join(path, "mainWindow.ui")):
+                path = os.path.join(path, "mainWindow.ui")
+            else:
+                module = options.module
+                module = module[0].lower() + module[1:]
+                path = os.path.join(path, module + ".ui") 
+            if os.path.exists(path) or options.module != "WallabyApp2":
                 designer.start(designer_bin, [path])
                 found = True
                 break
@@ -270,6 +275,7 @@ def main():
 
     parser = OptionParser()
     parser.add_option("-a"        , dest="app"         , default=None, help="The application name. If you are in a wallaby application folder, this option could be omitted.")
+    parser.add_option("-m"        , dest="module"      , default="WallabyApp2", help="The modules name. Defaults to WallabyApp2.")
     parser.add_option("--username", dest="username"    , default=None, help="The user to authenticate with the backends.")
     parser.add_option("--password", dest="password"    , default=None, help="The password to authenticate with the backends.")
 

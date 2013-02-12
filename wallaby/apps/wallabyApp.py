@@ -77,8 +77,13 @@ class WallabyApp(object):
             FX.appPath = os.path.join(".", "wallaby", "apps", appName)
 
         try:
-            print "importing", FX.appModule
-            mod = FX.imp(FX.appModule + '.mainWindow', False)
+            print "importing", options.module, "from", FX.appModule
+            if options.module == "WallabyApp2" and os.path.exists(os.path.join(FX.appPath, "mainWindow.py")):
+                mod = FX.imp(FX.appModule + '.mainWindow', False)
+            else:
+                module = options.module
+                module = module[0].lower() + module[1:]
+                mod = FX.imp(FX.appModule + '.' + module, False)
         except:
             mod = None
 

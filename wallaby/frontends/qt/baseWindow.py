@@ -19,7 +19,7 @@ from twisted.internet import defer
 
 class BaseWindow(BaseApp, QtGui.QMainWindow):
     def __init__(self, vendorName, appName, options, quitCB, parent=None, dbName=None, embedded=False, *args, **ka):
-        BaseApp.__init__(self, quitCB, dbName, embedded=embedded, appName=appName)
+        BaseApp.__init__(self, quitCB, dbName, embedded=embedded, appName=appName, module=options.module)
         QtGui.QMainWindow.__init__(self, parent)
 
         self._options = options
@@ -38,7 +38,7 @@ class BaseWindow(BaseApp, QtGui.QMainWindow):
 
         self._splash = None
 
-        self._settings = QtCore.QSettings(vendorName, appName)
+        self._settings = QtCore.QSettings(vendorName, appName + "_" + options. module)
 
     def settings(self):
         return self._settings
@@ -145,7 +145,7 @@ class BaseWindow(BaseApp, QtGui.QMainWindow):
         if self._splash != None: reactor.callLater(0.3, self._splash.finish, self)
 
     def closeEvent(self, e):
-        settings = QtCore.QSettings(self._vendorName, self._appName)
+        settings = QtCore.QSettings(self._vendorName, self._appName + "_" + self._options.module)
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("windowState", self.saveState())
         settings.sync()
