@@ -148,7 +148,10 @@ class MultiViewTableModel(QtCore.QAbstractTableModel):
     def updateCB(self, row):
         if row < len(self._cache):
             self._cache[row]['loading'] = False
-            for i in range(len(self._cache[row]['cache'])): self._cache[row]['cache'][i]['cached'] = False
+            for i in range(len(self._cache[row]['cache'])): 
+                self._cache[row]['cache'][i]['cached'] = False
+                self._cache[row]['cache'][i]['loading'] = False
+
             self.dataChanged.emit(self.index(row, 0), self.index(row, len(self._columns)-1))
                 
     def parent(self, index):
@@ -259,7 +262,7 @@ class MultiViewTableModel(QtCore.QAbstractTableModel):
         d = self._peer.deferredGetValue(row, self._columns[col])
         d.addCallback(partial(self._updateField, row, col))
 
-        if 'value' in self._cache[row]['cache'][col]:
+        if self._cache[row]['cache'][col]['cached'] and 'value' in self._cache[row]['cache'][col]:
             val = self._cache[row]['cache'][col]['value']
             if val is None: return ""
             else: return val
