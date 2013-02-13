@@ -329,7 +329,10 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
                 val = 0
                 if isinstance(value, (unicode, str)):
                     try:
-                        val = float(value)
+                        if re.match(r"^\d+$", value):
+                            val = int(value)
+                        else:
+                            val = float(value)
                     except: pass
                 elif isinstance(value, (float, int, bool)):
                     val = value
