@@ -154,7 +154,7 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, T
 
     def register(self):
         EnableLogic.register(self)
-        ViewLogic.register(self)
+        ViewLogic.register(self, raw=True)
         TriggeredPillowsLogic.register(self)
 
         if self.isEditor != None: EditLogic.register(self, raw=True)
