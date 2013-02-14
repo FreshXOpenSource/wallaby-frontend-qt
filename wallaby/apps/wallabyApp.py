@@ -76,14 +76,21 @@ class WallabyApp(object):
         except:
             FX.appPath = os.path.join(".", "wallaby", "apps", appName)
 
+        FXUI.css = None
+
         try:
             print "importing", options.module, "from", FX.appModule
             if options.module == "WallabyApp2" and os.path.exists(os.path.join(FX.appPath, "mainWindow.py")):
                 mod = FX.imp(FX.appModule + '.mainWindow', False)
+                if os.path.exists(os.path.join(FX.appPath, "mainWindow.css")):
+                    FXUI.css = open(os.path.join(FX.appPath, "mainWindow.css")).read()
             else:
                 module = options.module
                 module = module[0].lower() + module[1:]
                 mod = FX.imp(FX.appModule + '.' + module, False)
+
+                if os.path.exists(os.path.join(FX.appPath, module + ".css")):
+                    FXUI.css = open(os.path.join(FX.appPath, module + ".css")).read()
         except:
             mod = None
 
@@ -96,6 +103,9 @@ class WallabyApp(object):
 
         try:
             FXUI.mainWindow = mod.MainWindow(self.myQuit, options)
+            if FXUI.css is not None:
+                FXUI.app.setStyle("plastique")
+                FXUI.mainWindow.setStyleSheet(FXUI.css)
         except Exception as e:
             import traceback
             traceback.print_exc(file=sys.stdout)

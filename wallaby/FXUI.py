@@ -12,6 +12,7 @@ from platform import *
 
 mineIcon = None
 theirsIcon = None
+css = None
 
 configEditor = None
 

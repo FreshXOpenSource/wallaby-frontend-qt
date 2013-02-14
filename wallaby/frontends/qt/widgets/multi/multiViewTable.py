@@ -46,6 +46,8 @@ class MultiViewTable(QtGui.QTableView, BaseWidget, EnableLogic, ContextMenuLogic
 
     multiSelect = Meta.property("bool")
 
+    alternateRowColors = Meta.property("bool", default=False)
+
     triggers = Meta.property("list", readOnly=True, default=["", "clicked", "double-clicked", "key"])
 
     def getMenuEntries(self): return ContextMenuLogic.getMenuEntries(self)
@@ -99,7 +101,6 @@ class MultiViewTable(QtGui.QTableView, BaseWidget, EnableLogic, ContextMenuLogic
         self.horizontalHeader().setClickable(True)
         self.horizontalHeader().sectionClicked.connect(self._columnClicked)
 
-        self.setAlternatingRowColors(True)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
@@ -241,6 +242,7 @@ class MultiViewTable(QtGui.QTableView, BaseWidget, EnableLogic, ContextMenuLogic
 
         sortable = []
 
+        self.setAlternatingRowColors(self.alternateRowColors)
 
         converted = False
         for c in self.sortable:

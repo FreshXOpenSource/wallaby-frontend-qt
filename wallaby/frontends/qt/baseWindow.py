@@ -66,6 +66,8 @@ class BaseWindow(BaseApp, QtGui.QMainWindow):
         if FXUI.configEditor == None and (self._options is None or self._options.app != 'inspector'):
             from wallaby.apps.inspector.mainWindow import MainWindow
             FXUI.configEditor = MainWindow(self.hideConfig, self._options, embedded=True)
+            if FXUI.css is not None:
+                FXUI.configEditor.setStyleSheet(FXUI.css)
 
             if self._options is not None:
                 FXUI.configEditor.authenticated(self._options.username, self._options.password, self._options)
@@ -89,6 +91,13 @@ class BaseWindow(BaseApp, QtGui.QMainWindow):
         self._debuggedRooms = rooms
 
     def keyPressEvent(self, e):
+
+        if e.modifiers() & QtCore.Qt.ControlModifier and e.key() == QtCore.Qt.Key_F:
+            if self.isFullScreen():
+                self.showNormal()
+            else:
+                self.showFullScreen()
+            return
 
         if e.modifiers() & QtCore.Qt.ControlModifier and e.modifiers() & QtCore.Qt.AltModifier and e.key() == QtCore.Qt.Key_S:
             tl = FXUI.app.topLevelAt(QtGui.QCursor.pos())

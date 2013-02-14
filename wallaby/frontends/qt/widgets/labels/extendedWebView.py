@@ -20,6 +20,7 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
 
     triggers = Meta.property("list", readOnly=True, default=["", "clicked"])
     templateName = Meta.property("string")
+    webGL = Meta.property("bool")
 
     ignoreSSLErrors = Meta.property("bool")
 
@@ -89,6 +90,12 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         EnableLogic.register(self)
         ViewLogic.register(self, raw=True)
         TriggeredPillowsLogic.register(self)
+
+        if self.webGL:
+            print "Enable WebGL"
+            self.page().settings().setAttribute(QtWebKit.QWebSettings.WebGLEnabled, True)
+            self.page().settings().setAttribute(QtWebKit.QWebSettings.AcceleratedCompositingEnabled, True)
+
 
         import os.path
         if self.templateName is not None and FXUI.app is not None and os.path.exists(os.path.join(FX.appPath, "templates", self.templateName, "index.html")):
