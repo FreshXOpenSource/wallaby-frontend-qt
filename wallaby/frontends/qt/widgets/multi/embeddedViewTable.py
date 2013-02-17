@@ -34,6 +34,8 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
     minRowHeight = Meta.property("int", extended=True)
     minColumnWidth = Meta.property("int", extended=True)
 
+    alternateRowColors = Meta.property("bool", default=False)
+
     editOnInsert = Meta.property("bool")
 
     triggers = Meta.property("list", readOnly=True, default=["", "clicked", "double-clicked", "key"])
@@ -59,7 +61,7 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
 
         self._isEnabled = False
 
-        self.setAlternatingRowColors(True)
+        # self.setAlternatingRowColors(True)
         self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
@@ -134,6 +136,8 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         EnableLogic.register(self)
         EditLogic.register(self)
         TriggeredPillowsLogic.register(self)
+
+        self.setAlternatingRowColors(self.alternateRowColors)
 
         if isinstance(self.dbColumns, list) and len(self.dbColumns) > 0 and isinstance(self.dbColumns[0], (str, unicode)):
             columns, labels = FX.splitList(self.dbColumns, ':')
