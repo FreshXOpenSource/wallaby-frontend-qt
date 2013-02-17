@@ -11,7 +11,7 @@ from ..baseWidget import *
 from ..logics import *
 
 from wallaby.pf.peer.viewer import *
-from webRoom import WebRoom
+from webRoom import WebRoom, WebHouse
 
 import copy
 
@@ -35,7 +35,9 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
 
         self.linkClicked.connect(self._linkActivated)
 
-        self._webRoom = WebRoom(self)
+        self._webHouse = WebHouse(self)
+
+        self._objects = {}
 
         self.page().mainFrame().javaScriptWindowObjectCleared.connect(self._registerObjects)
         self._registerObjects()
@@ -57,8 +59,21 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         self.page().settings().setAttribute(QtWebKit.QWebSettings.XSSAuditingEnabled, False)
         self.page().settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
 
+    def registerObject(self, name, obj):
+        self._objects[name] = obj
+        self.page().mainFrame().addToJavaScriptWindowObject(name, obj)
+
+    def registeredObject(self, name):
+        if name in self._objects:
+            return self._objects[name]
+        else:
+            return None
+
     def _registerObjects(self):
-        self.page().mainFrame().addToJavaScriptWindowObject("wallaby", self._webRoom)
+        self.page().mainFrame().addToJavaScriptWindowObject("wlbyHouse", self._webHouse)
+        for name, obj in self._objects.items():
+            self.page().mainFrame().addToJavaScriptWindowObject(name, obj)
+            
 
     def _linkActivated(self, url):
         link = unicode(url.toString())
@@ -76,13 +91,6 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         ViewLogic.deregister(self, remove)
         TriggeredPillowsLogic.deregister(self, remove)
 
-    # Proxy for webRoom
-    def catch(self, pillow, cb):
-        House.get(self.room).catch(pillow, cb)
-
-    def throw(self, pillow, feathers):
-        House.get(self.room).throw(pillow, feathers)
-
     def roomName(self):
         return self.room
 
@@ -92,10 +100,8 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         TriggeredPillowsLogic.register(self)
 
         if self.webGL:
-            print "Enable WebGL"
             self.page().settings().setAttribute(QtWebKit.QWebSettings.WebGLEnabled, True)
             self.page().settings().setAttribute(QtWebKit.QWebSettings.AcceleratedCompositingEnabled, True)
-
 
         import os.path
         if self.templateName is not None and FXUI.app is not None and os.path.exists(os.path.join(FX.appPath, "templates", self.templateName, "index.html")):
