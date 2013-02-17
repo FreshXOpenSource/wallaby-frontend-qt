@@ -6,6 +6,7 @@ class Options:
         self.server = "127.0.0.1"
         self.app = "$appname$"
         self.db = "$appname$"
+        self.module = "WallabyApp2"
         self.password = self.username = None
         self.fx = True
         self.debug = ""
