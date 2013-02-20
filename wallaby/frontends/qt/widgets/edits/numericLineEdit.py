@@ -34,16 +34,12 @@ class NumericLineEdit(QtGui.QWidget, Ui_NumericLineEdit, BaseWidget, EnableLogic
         ViewLogic.__init__(self, Viewer, self.setValue)
         EditLogic.__init__(self, Editor, self.getValue)
 
-        self._ignorePalette = True
-
         self.setupUi(self)
 
         self._value = 0
 
         self.doubleSpinBox.editingFinished.connect(self.editingFinishedCB)
         self.pushButtonSet.clicked.connect(self.editingFinishedCB)
-
-        self.registerPalette()
 
     def editingFinishedCB(self, *args):
         if self._editor:
@@ -110,9 +106,3 @@ class NumericLineEdit(QtGui.QWidget, Ui_NumericLineEdit, BaseWidget, EnableLogic
         
     def _select(self):
         self.doubleSpinBox.setFocus()
-    
-    def childPalette(self):
-        return self.doubleSpinBox.palette()
-    
-    def setChildPalette(self, p):
-        self.doubleSpinBox.setPalette(p)

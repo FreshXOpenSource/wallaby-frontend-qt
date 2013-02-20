@@ -37,36 +37,14 @@ class BaseWidget(object):
         self._overlay = None
         self._lastConfig = None
 
+        self._noConflictCSS = ""
+
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._showConflictContextMenu)
 
         self._template = None
-        self._ignorePalette = False
-
-    def registerPalette(self):
-        palette = self.childPalette()
-        self._origPalette = palette.resolve(palette)
-        self._disabledSet = set()
-  
-        brush = QtGui.QBrush(QtGui.QColor(0, 34, 255))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        self.setAllStateBrush(palette, QtGui.QPalette.ButtonText, brush)
-        self.setAllStateBrush(palette, QtGui.QPalette.Text, brush)
-        self._pendingPalette = palette.resolve(palette)
-      
-        brush.setColor(QtGui.QColor(255, 0, 0)) 
-        self.setAllStateBrush(palette, QtGui.QPalette.ButtonText, brush)
-        self.setAllStateBrush(palette, QtGui.QPalette.Text, brush)
-        self.setAllStateBrush(palette, QtGui.QPalette.WindowText, brush)
-        self._faultyPalette = palette.resolve(palette)
-
-        self._noConflictPalette = self._origPalette
 
     def registerConfigViewer(self):
-        if not self._ignorePalette:
-            self.registerPalette()
-        # if not FX.app: return
-
         self._template = self.getWallabyTemplate()
         if self._template is None:
             self._template = unicode(self.objectName())
@@ -166,19 +144,19 @@ class BaseWidget(object):
             self._overlay = None
 
     def _setOrigPalette(self):
-        self._noConflictPalette = self._origPalette
+        self._noConflictCSS = ""
         if self._hasConflict == False:
-            self.setPalette(self._noConflictPalette)
+            self.setStyleSheet(self._noConflictCSS)
 
     def _setPendingPalette(self):
-        self._noConflictPalette = self._pendingPalette
+        self._noConflictCSS = "QWidget { color: blue; }"
         if self._hasConflict == False:
-            self.setPalette(self._noConflictPalette)
+            self.setStyleSheet(self._noConflictCSS)
 
     def _setFaultyPalette(self):
-        self._noConflictPalette = self._faultyPalette
+        self._noConflictCSS = "QWidget { color: red; }"
         if self._hasConflict == False:
-            self.setPalette(self._noConflictPalette)
+            self.setStyleSheet(self._noConflictCSS)
 
     def getMenuEntries(self):
         return {}
@@ -263,25 +241,13 @@ class BaseWidget(object):
     def _conflict(self, hasConflict, currentValue, conflictValues):
         if hasConflict:
             self._hasConflict   = True
-            self.setPalette(self._faultyPalette)
+            self.setStyleSheet("QWidget {color: red; }")
         else:
             self._hasConflict = False
-            self.setPalette(self._noConflictPalette)
+            self.setStyleSheet(self._noConflictCSS)
 
         self._currentValue  = currentValue
         self._conflictValues = conflictValues
-
-    def setAllStateBrush(self, palette, t, brush):
-        palette.setBrush(QtGui.QPalette.Active  , t, brush)
-        palette.setBrush(QtGui.QPalette.Inactive, t, brush)
-        palette.setBrush(QtGui.QPalette.Disabled, t, brush)
-
-    def childPalette(self):
-        return self.palette()
-
-    def setChildPalette(self, p):
-        FX.trace("DEFAULT SET CHILD PALETTE")
-        self.setPalette(p)
 
     def register(self):
         self._registered = True

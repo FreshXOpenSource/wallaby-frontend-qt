@@ -84,9 +84,8 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
         if self._proxyModel is not None:
             idx = self._proxyModel.mapFromSource(idx)
 
-        print "Set index", QtGui.QTableView.setCurrentIndex(self, idx)
-        print "EDIT", QtGui.QTableView.edit(self, idx, QtGui.QTableView.AllEditTriggers, None)  
-
+        QtGui.QTableView.setCurrentIndex(self, idx)
+        QtGui.QTableView.edit(self, idx, QtGui.QTableView.AllEditTriggers, None)  
     def selectRow(self, row):
         if self._proxyModel is not None:
             idx = self._model.createIndex(row, 0)
@@ -188,7 +187,6 @@ class EmbeddedViewTable(QtGui.QTableView, BaseWidget, EnableLogic, EditLogic, Tr
             elif t == "progress":
                 self.setItemDelegateForColumn(col, self._progressDelegate)
             elif t == "comboedit":
-                print "set combo delegate"
                 self._comboDelegate.append(ComboBoxDelegate(self, col))
                 self.setItemDelegateForColumn(col, self._comboDelegate[-1])
 

@@ -61,6 +61,7 @@ class ImageDelegate(QtGui.QStyledItemDelegate):
             if obj.height() > maxHeight: maxHeight = obj.height()
         else:
             if isinstance(obj, QtCore.QPyNullVariant): obj = "-"
+            # painter.drawItemText(rect, QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter | QtCore.Qt.TextWordWrap, option.palette(), True, unicode(obj), QtGui.QPalette.ButtonText)
             painter.drawText(rect, QtCore.Qt.AlignTop | QtCore.Qt.AlignHCenter | QtCore.Qt.TextWordWrap, unicode(obj))
             painter.restore()
             return
