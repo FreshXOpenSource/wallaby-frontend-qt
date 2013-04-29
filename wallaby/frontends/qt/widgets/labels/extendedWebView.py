@@ -21,6 +21,7 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
     triggers = Meta.property("list", readOnly=True, default=["", "clicked"])
     templateName = Meta.property("string")
     webGL = Meta.property("bool")
+    diskCachePath = Meta.property("string")
 
     ignoreSSLErrors = Meta.property("bool")
 
@@ -42,10 +43,10 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         self.page().mainFrame().javaScriptWindowObjectCleared.connect(self._registerObjects)
         self._registerObjects()
 
-        palette = self.palette()
-        palette.setBrush(QtGui.QPalette.Base, QtCore.Qt.transparent)
-        self.page().setPalette(palette)
-        self.setAttribute(QtCore.Qt.WA_OpaquePaintEvent, False)
+        # palette = self.palette()
+        # palette.setBrush(QtGui.QPalette.Base, QtCore.Qt.transparent)
+        # self.page().setPalette(palette)
+        # self.setAttribute(QtCore.Qt.WA_OpaquePaintEvent, False)
 
         self._index = "<html><body>Template not found</body></html>"
         self._content = ""
@@ -58,6 +59,7 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
         self.page().settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
         self.page().settings().setAttribute(QtWebKit.QWebSettings.XSSAuditingEnabled, False)
         self.page().settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
+        self.page().settings().setAttribute(QtWebKit.QWebSettings.DnsPrefetchEnabled, True)
 
     def registerObject(self, name, obj):
         self._objects[name] = obj
@@ -125,6 +127,11 @@ class ExtendedWebView(QtWebKit.QWebView, BaseWidget, EnableLogic, ViewLogic, Tri
 
         if self.ignoreSSLErrors:
             self.page().networkAccessManager().sslErrors.connect(self._sslErrorHandler)
+
+        if self.diskCachePath and os.path.exists(os.path.join(FX.appPath, self.diskCachePath)):
+            self.diskCache = QtNetwork.QNetworkDiskCache(self)
+            self.diskCache.setCacheDirectory(os.path.join(FX.appPath, self.diskCachePath))
+            self.page().networkAccessManager().setCache(self.diskCache)
 
     def _sslErrorHandler(self, reply, errorList):
         # Ignore SSL Error!! Fix Me

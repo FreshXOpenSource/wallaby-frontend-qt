@@ -14,6 +14,8 @@ mineIcon = None
 theirsIcon = None
 css = None
 
+qt4reactor = False
+
 configEditor = None
 
 pLogo       = None

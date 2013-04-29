@@ -7,7 +7,6 @@ sys.path.insert(0, ".")
 
 from optparse import OptionParser
 from ConfigParser import ConfigParser
-from wallaby.qt_combat import *
 import sys, shutil, os, platform
 import wallaby.FX as FX
 
@@ -70,6 +69,7 @@ def push(options):
     couchpush(Config(), path, options.push)
 
 def startDesigner(options):
+    from wallaby.qt_combat import QtGui, QtCore
     app = QtGui.QApplication(sys.argv)
 
     plugins = []

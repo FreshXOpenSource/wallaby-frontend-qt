@@ -45,31 +45,32 @@ from twisted.internet import posixbase
 from twisted.python.runtime import platformType, platform
 import wallaby.FX as FX
 
-from wallaby.qt_combat.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
-from wallaby.qt_combat.QtCore import QEventLoop
+from wallaby.qt_combat import *
+# from wallaby.qt_combat.QtCore import QSocketNotifier, QObject, SIGNAL, QTimer, QCoreApplication
+# from wallaby.qt_combat.QtCore import QEventLoop
 
-class TwistedSocketNotifier(QObject):
+class TwistedSocketNotifier(QtCore.QObject):
     """
     Connection between an fd event and reader/writer callbacks.
     """
 
     def __init__(self, parent, reactor, watcher, socketType):
-        QObject.__init__(self, parent)
+        QtCore.QObject.__init__(self, parent)
         self.reactor = reactor
         self.watcher = watcher
         fd = watcher.fileno()
-        self.notifier = QSocketNotifier(fd, socketType, parent)
+        self.notifier = QtCore.QSocketNotifier(fd, socketType, parent)
         self.notifier.setEnabled(True)
-        if socketType == QSocketNotifier.Read:
+        if socketType == QtCore.QSocketNotifier.Read:
             self.fn = self.read
         else:
             self.fn = self.write
-        QObject.connect(self.notifier, SIGNAL("activated(int)"), self.fn)
+        QtCore.QObject.connect(self.notifier, QtCore.SIGNAL("activated(int)"), self.fn)
 
 
     def shutdown(self):
         self.notifier.setEnabled(False)
-        self.disconnect(self.notifier, SIGNAL("activated(int)"), self.fn)
+        self.disconnect(self.notifier, QtCore.SIGNAL("activated(int)"), self.fn)
         self.fn = self.watcher = None
         self.notifier.deleteLater()
         self.deleteLater()
@@ -127,16 +128,16 @@ class QtReactor(posixbase.PosixReactorBase):
         self._reads = {}
         self._writes = {}
         self._notifiers = {}
-        self._timer = QTimer()
+        self._timer = QtCore.QTimer()
         self._timer.setSingleShot(True)
-        QObject.connect(self._timer, SIGNAL("timeout()"), self.iterate)
+        QtCore.QObject.connect(self._timer, QtCore.SIGNAL("timeout()"), self.iterate)
 
-        if QCoreApplication.instance() is None:
+        if QtCore.QCoreApplication.instance() is None:
             # Application Object has not been started yet
-            self.qApp=QCoreApplication([])
+            self.qApp=QtCore.QCoreApplication([])
             self._ownApp=True
         else:
-            self.qApp = QCoreApplication.instance()
+            self.qApp = QtCore.QCoreApplication.instance()
             self._ownApp=False
         self._blockApp = None
         posixbase.PosixReactorBase.__init__(self)
@@ -157,14 +158,14 @@ class QtReactor(posixbase.PosixReactorBase):
         """
         Add a FileDescriptor for notification of data available to read.
         """
-        self._add(reader, self._reads, QSocketNotifier.Read)
+        self._add(reader, self._reads, QtCore.QSocketNotifier.Read)
 
 
     def addWriter(self, writer):
         """
         Add a FileDescriptor for notification of data available to write.
         """
-        self._add(writer, self._writes, QSocketNotifier.Write)
+        self._add(writer, self._writes, QtCore.QSocketNotifier.Write)
 
 
     def _remove(self, xer, primary):
@@ -237,7 +238,7 @@ class QtReactor(posixbase.PosixReactorBase):
         self._timer.stop()
         delay = max(delay, 1)
         if not fromqt:
-            self.qApp.processEvents(QEventLoop.AllEvents, delay * 1000)
+            self.qApp.processEvents(QtCore.QEventLoop.AllEvents, delay * 1000)
         if self.timeout() is None:
             timeout = 0.1
         elif self.timeout() == 0:
@@ -257,7 +258,7 @@ class QtReactor(posixbase.PosixReactorBase):
         if self._ownApp:
             self._blockApp = self.qApp
         else:
-            self._blockApp = QEventLoop()
+            self._blockApp = QtCore.QEventLoop()
         self.runReturn()
         self._blockApp.exec_()
 

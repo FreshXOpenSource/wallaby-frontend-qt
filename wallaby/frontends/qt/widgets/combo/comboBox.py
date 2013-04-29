@@ -173,6 +173,10 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, T
             if self.sourcePath != None:
                 if ':' in self.source:
                     room, source = self.source.split(':') 
+                    if room != room.upper():
+                        room = self.room
+                        source = self.source
+
                 else:
                     room = self.room
                     source = self.source

@@ -45,8 +45,9 @@ class WallabyApp(object):
         splash.raise_()
         FXUI.app.processEvents()
 
-        if USES_PYSIDE:
-            import wallaby.frontends.qt.reactor.qtreactor as qtreactor
+        if USES_PYSIDE or FXUI.qt4reactor:
+            print "Install qt4reactor. USES_PYSIDE =", USES_PYSIDE
+            import wallaby.frontends.qt.reactor.qt4reactor as qtreactor
             qtreactor.install()
         else:
             threadedselect.install()
@@ -97,7 +98,7 @@ class WallabyApp(object):
         if mod == None:
             FX.crit('Module', FX.appModule, 'not found')
             reactor.callWhenRunning(self.myQuit)
-            if USES_PYSIDE: reactor.runReturn()
+            if USES_PYSIDE or FXUI.qt4reactor: reactor.runReturn()
             FXUI.app.exec_()
             return
 
@@ -112,7 +113,7 @@ class WallabyApp(object):
 
             from twisted.internet import reactor
             reactor.callWhenRunning(self.myQuit)
-            if USES_PYSIDE: reactor.runReturn()
+            if USES_PYSIDE or FXUI.qt4reactor: reactor.runReturn()
             FXUI.app.exec_()
             return
 
@@ -131,7 +132,7 @@ class WallabyApp(object):
 
         # self.gc = GarbageCollector(FXUI.mainWindow, True)
 
-        if USES_PYSIDE: reactor.runReturn()
+        if USES_PYSIDE or FXUI.qt4reactor: reactor.runReturn()
         FXUI.app.exec_()
 
     @defer.inlineCallbacks
@@ -182,6 +183,7 @@ class WallabyApp(object):
             app = FXUI.app
             del FXUI.app
             del FXUI.mainWindow
+            FXUI.mainWindow = FXUI.app = None
 
             print "Stopping Reactor"
             from twisted.internet import reactor
@@ -190,9 +192,8 @@ class WallabyApp(object):
             FX.info("Stopping app")
             print "Stopping App"
 
-            app.exit()
+            app.exit(0)
             # FXUI.app.quit()
-            FX.info("Stopping reactor")
             FX.info("Bye")
 
             app = None
