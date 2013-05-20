@@ -14,6 +14,9 @@ from wallaby.pf.peer.imageEditor import *
 class ImageLabel(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic, EditLogic):
     __metaclass__ = QWallabyMeta
 
+    usePathAsAttachmentName = Meta.property('bool', default=False)
+    imageMaxSize = Meta.property('int', default=0)
+
     def __init__(self, *args):
         QtGui.QLabel.__init__(self, *args)
         BaseWidget.__init__(self, QtGui.QLabel, *args)
@@ -53,7 +56,7 @@ class ImageLabel(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         QtGui.QLabel.setEnabled(self, True)
 
     def currentImage(self):
-        return self._currentImage, self._imageName
+        return self._currentImage, self._imageName, self.usePathAsAttachmentName
 
     def mouseDoubleClickEvent(self, e):
         if self._readOnly or self._editor == None: 
@@ -74,6 +77,10 @@ class ImageLabel(QtGui.QLabel, BaseWidget, EnableLogic, ViewLogic, EditLogic):
         self._imageName = imgName
 
         img = QtGui.QImage(name)
+
+        if self.imageMaxSize > 0:
+            img = img.scaled(self.imageMaxSize, self.imageMaxSize, QtCore.Qt.KeepAspectRatio)
+
         self._updateImage(img)
         self._updatePopup(img)
 
