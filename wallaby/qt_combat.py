@@ -16,10 +16,12 @@ try:
     import PySide.QtGui as _QtGui
     import PySide.QtWebKit as _QtWebKit
     import PySide.QtDesigner as _QtDesigner
+    import PySide.QtNetwork as _QtNetwork
     QtCore = _QtCore
     QtGui = _QtGui
     QtWebKit = _QtWebKit
     QtDesigner = _QtDesigner
+    QtNetwork = _QtNetwork
     USES_PYSIDE = True
 except ImportError:
     import sip
@@ -29,10 +31,12 @@ except ImportError:
     import PyQt4.QtGui as _QtGui
     import PyQt4.QtWebKit as _QtWebKit
     import PyQt4.QtDesigner as _QtDesigner
+    import PyQt4.QtNetwork as _QtNetwork
     QtCore = _QtCore
     QtGui = _QtGui
     QtWebKit = _QtWebKit
     QtDesigner = _QtDesigner
+    QtNetwork = _QtNetwork
     USES_PYSIDE = False
 
 
