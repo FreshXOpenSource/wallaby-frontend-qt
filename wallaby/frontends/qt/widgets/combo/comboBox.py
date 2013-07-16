@@ -258,6 +258,7 @@ class ComboBox(QtGui.QComboBox, BaseWidget, EnableLogic, ViewLogic, EditLogic, T
         self._translateReverse = {}
         self.clear()
 
+
         if self.source != None and "__DOC__" in self.source:
             if document is not None and self._subPath != None:
                 from wallaby.common.pathHelper import PathHelper

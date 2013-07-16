@@ -135,6 +135,8 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
             self.dataChanged.emit(idx[0], idx[0])
 
     def reorderRows(self, row, oldIndex, newIndex):
+        if not self._isList: return
+
         self.beginRemoveRows(self._parent, oldIndex, oldIndex)
         item = self._data.pop(oldIndex)
         self.endRemoveRows()
@@ -311,14 +313,15 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
                 if self._columns[col] == '*':
                     self._data[key] = val
                 elif not self._isList and self._columns[col] == '__key__':
-                    if key in self._data:
-                        self._data[val] = self._data[key]
-                        del self._data[key]
+                    if val != key:
+                        if key in self._data:
+                            self._data[val] = self._data[key]
+                            del self._data[key]
 
-                    del self._rows[self._keys[row]]
-                    self._keys[row] = val
-                    self._rows[val] = row
-                    self._peer.select(val)
+                        del self._rows[self._keys[row]]
+                        self._keys[row] = val
+                        self._rows[val] = row
+                        self._peer.select(val)
                 else:
                     if self._data[key] == None or not isinstance(self._data[key], dict): 
                         self._data[key] = {}
@@ -352,7 +355,9 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
                 val = False
                 if isinstance(value, (unicode, str)):
                     try:
-                        val = bool(value)
+                        if value == "true": val = True
+                        else if value == "false": val = False
+                        else val = bool(value)
                     except: pass
                 elif isinstance(value, (bool)):
                     val = value
@@ -369,7 +374,6 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
                 else:
                     PathHelper.setValue(self._data[key], self._columns[col], val)
  
-
             if vtype in ("stringedit", "doubleedit", "numberedit", "currencyedit", "booledit"):
                 self.dataChanged.emit(index, index)
                 self._peer.fieldChanged(key, self._columns[col])
