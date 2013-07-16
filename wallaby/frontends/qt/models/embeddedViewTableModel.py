@@ -356,7 +356,7 @@ class EmbeddedViewTableModel(QtCore.QAbstractTableModel):
                 if isinstance(value, (unicode, str)):
                     try:
                         if value == "true": val = True
-                        else if value == "false": val = False
+                        elif value == "false": val = False
                         else: val = bool(value)
                     except: pass
                 elif isinstance(value, (bool)):
